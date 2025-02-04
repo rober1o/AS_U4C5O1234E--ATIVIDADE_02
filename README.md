@@ -16,13 +16,13 @@ Ao pressionar o botão (pushbutton), os três LEDs serão ligados simultaneament
 
 1. Todos os LEDs acendem ao pressionar o botão.
 
-2. Após 1 segundo, um LED é desligado.
+2. Após 950 milissegundo, um LED é desligado.
 
-3. Após mais 1 segundo, o segundo LED é desligado.
+3. Após mais 950 milissegundo, o segundo LED é desligado.
 
-Após mais 1 segundos, o último LED é desligado.
+Após mais 950 milissegundo, o último LED é desligado.
 
-O botão só pode ser acionado novamente após o último LED ser desligado.
+O botão só pode ser acionado novamente após o último LED ser desligado, foi usado o intervalo de 950 milissegundos em vez de 1s para que tornasse visivel o desligamento do LED.
 
 A transição entre os LEDs é controlada pelo temporizador utilizando funções de call-back, seguindo o modelo da função turn_off_callback(), abordada em aula.
 

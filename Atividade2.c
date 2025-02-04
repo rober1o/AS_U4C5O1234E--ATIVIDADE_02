@@ -7,8 +7,6 @@
 #define LED_GREEN_PIN 13
 #define BUTTON_A 5
 
-volatile bool lock_button = false;  // Flag para bloquear o botão por 3 segundos
-
 // Funções de callback
 int64_t apaga_azul_callback(alarm_id_t id, void *user_data);
 int64_t apaga_vermelho_callback(alarm_id_t id, void *user_data);
@@ -25,16 +23,16 @@ void acender_todos() {
 // Callback para desligar o LED azul após 1 segundo
 int64_t apaga_azul_callback(alarm_id_t id, void *user_data) {
     gpio_put(LED_BLUE_PIN, false);  // Desliga o LED azul
-    // Cria um alarme para desligar o LED vermelho após 1 segundo
-    add_alarm_in_ms(1000, apaga_vermelho_callback, NULL, false);
+    // Cria um alarme para desligar o LED vermelho após 950 milissegundos
+    add_alarm_in_ms(950, apaga_vermelho_callback, NULL, false);
     return 0;
 }
 
 // Callback para desligar o LED vermelho após 1 segundo
 int64_t apaga_vermelho_callback(alarm_id_t id, void *user_data) {
     gpio_put(LED_RED_PIN, false);  // Desliga o LED vermelho
-    // Cria um alarme para desligar o LED verde após 1 segundo
-    add_alarm_in_ms(1000, apaga_verde_callback, NULL, false);
+    // Cria um alarme para desligar o LED verde após 950 milissegundos
+    add_alarm_in_ms(950, apaga_verde_callback, NULL, false);
     return 0;
 }
 
@@ -47,13 +45,13 @@ int64_t apaga_verde_callback(alarm_id_t id, void *user_data) {
 // Função de interrupção para o botão
 void gpio_irq_handler(uint gpio, uint32_t events) {
     // Verifica se o botão foi pressionado e se o botão não está bloqueado
-    if (gpio_get(BUTTON_A) == 0 && !lock_button) {
+    if (gpio_get(BUTTON_A) == 0) {
 
         if (gpio_get(BUTTON_A) == 0) {  // Confirma que o botão foi pressionado
             acender_todos();  // Acende todos os LEDs
-            lock_button = true;  // Bloqueia o botão por 3 segundos
-            // Chama o primeiro alarme para desligar o LED azul após 1 segundo
-            add_alarm_in_ms(1000, apaga_azul_callback, NULL, false);
+            gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, false, gpio_irq_handler);  //Desabilita a interrupção
+            // Chama o primeiro alarme para desligar o LED azul 950 milissegundos
+            add_alarm_in_ms(950, apaga_azul_callback, NULL, false);
             // Chama o callback para desbloquear o botão após 3 segundos
             add_alarm_in_ms(3000, desbloquear_botao_callback, NULL, false);
         }
@@ -62,7 +60,7 @@ void gpio_irq_handler(uint gpio, uint32_t events) {
 
 // Callback para desbloquear o botão após 3 segundos
 int64_t desbloquear_botao_callback(alarm_id_t id, void *user_data) {
-    lock_button = false;  // Desbloqueia o botão
+    gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, gpio_irq_handler);
     return 0;
 }
 
